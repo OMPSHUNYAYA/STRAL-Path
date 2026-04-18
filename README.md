@@ -13,6 +13,8 @@
 ![Python](https://img.shields.io/badge/Python-3.9%2B-blue)
 ![Open-Standard](https://img.shields.io/badge/Reference-Open%20Standard-blue)
 
+![STRAL-Path Verify](https://github.com/OMPSHUNYAYA/STRAL-PATH/actions/workflows/stral-path-verify.yml/badge.svg)
+
 **Proven in a tiny executable kernel.**
 
 Path correctness in systems emerges directly from structure — without requiring traversal, graph search, ordered exploration, or step-by-step movement for correctness.
