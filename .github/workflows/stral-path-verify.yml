@@ -1,0 +1,210 @@
+name: stral-path-verify
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Verify frozen SHA256 hashes
+        shell: bash
+        run: |
+          python - <<'PY'
+          import hashlib
+          import re
+          import sys
+          from pathlib import Path
+
+          freeze_path = Path("VERIFY/FREEZE_DEMO_SHA256.txt")
+          py_path = Path("demo/stral_visual_path_demo.py")
+          html_path = Path("demo/stral_visual_path_demo.html")
+
+          if not freeze_path.exists():
+              print("ERROR: Missing VERIFY/FREEZE_DEMO_SHA256.txt")
+              sys.exit(1)
+
+          if not py_path.exists():
+              print("ERROR: Missing demo/stral_visual_path_demo.py")
+              sys.exit(1)
+
+          if not html_path.exists():
+              print("ERROR: Missing demo/stral_visual_path_demo.html")
+              sys.exit(1)
+
+          freeze_text = freeze_path.read_text(encoding="utf-8")
+
+          def extract_expected_hash(label: str) -> str:
+              pattern = rf"{re.escape(label)}\s*SHA256:\s*([0-9a-f]{{64}})"
+              m = re.search(pattern, freeze_text, re.IGNORECASE)
+              if not m:
+                  print(f"ERROR: Could not find SHA256 entry for {label}")
+                  sys.exit(1)
+              return m.group(1)
+
+          def sha256_file(path: Path) -> str:
+              return hashlib.sha256(path.read_bytes()).hexdigest()
+
+          expected_py = extract_expected_hash(r"demo\stral_visual_path_demo.py")
+          expected_html = extract_expected_hash(r"demo\stral_visual_path_demo.html")
+
+          actual_py = sha256_file(py_path)
+          actual_html = sha256_file(html_path)
+
+          if actual_py != expected_py:
+              print("ERROR: Python demo hash mismatch")
+              print("Expected:", expected_py)
+              print("Actual:  ", actual_py)
+              sys.exit(1)
+
+          if actual_html != expected_html:
+              print("ERROR: HTML demo hash mismatch")
+              print("Expected:", expected_html)
+              print("Actual:  ", actual_html)
+              sys.exit(1)
+
+          print("Python demo hash verified:", actual_py)
+          print("HTML demo hash verified:  ", actual_html)
+          PY
+
+      - name: Run Python demo and verify expected pass markers
+        shell: bash
+        run: |
+          python - <<'PY'
+          import subprocess
+          import sys
+
+          cmd = [sys.executable, "demo/stral_visual_path_demo.py"]
+          result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+          out = result.stdout
+
+          required_markers = [
+              "SCENARIO 1 - UNIQUE VALID PATH",
+              '"resolution_state": "RESOLVED"',
+              "SCENARIO 2 - NO VALID PATH",
+              '"resolution_state": "ABSTAIN"',
+              "SCENARIO 3 - MULTIPLE VALID PATHS",
+              '"resolution_state": "CONFLICT"',
+              "SCENARIO 4 - INVALID ALTERNATIVE DOES NOT OVERRIDE VALID PATH",
+              "SCENARIO 5A - ORDER TEST A",
+              "SCENARIO 5B - ORDER TEST B",
+              "PASS: unique valid path -> resolved",
+              "PASS: no valid path -> no forced path truth",
+              "PASS: multiple valid paths -> conflict",
+              "PASS: invalid alternative does not override valid path",
+              "PASS: same structure -> same visible state and certificate",
+              "PASS: certificate = SHA256(normalize(visible_state))",
+              "PASS: diagnostic visibility != admissible path visibility",
+              "CHALLENGE: same structure -> different visible state or certificate",
+          ]
+
+          missing = [marker for marker in required_markers if marker not in out]
+          if missing:
+              print("ERROR: Python demo output missing expected markers:")
+              for marker in missing:
+                  print(" -", marker)
+              print("\nFull output:\n")
+              print(out)
+              sys.exit(1)
+
+          print("Python demo baseline output verified.")
+          PY
+
+      - name: Run Python demo twice and verify deterministic output
+        shell: bash
+        run: |
+          python - <<'PY'
+          import subprocess
+          import sys
+
+          cmd = [sys.executable, "demo/stral_visual_path_demo.py"]
+
+          result1 = subprocess.run(cmd, capture_output=True, text=True, check=True)
+          result2 = subprocess.run(cmd, capture_output=True, text=True, check=True)
+
+          out1 = result1.stdout
+          out2 = result2.stdout
+
+          if out1 != out2:
+              print("ERROR: Non-deterministic Python demo output")
+              sys.exit(1)
+
+          print("Deterministic Python output verified.")
+          PY
+
+      - name: Verify HTML demo contains expected structural hooks
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import sys
+
+          html_path = Path("demo/stral_visual_path_demo.html")
+          text = html_path.read_text(encoding="utf-8")
+
+          required_snippets = [
+              "async function resolution()",
+              "function normalize(obj)",
+              "await crypto.subtle.digest(",
+              "const defaultStructure = {",
+              'id="copyCertificateBtn"',
+              'id="copyVisibleBtn"',
+              'class="theory-image"',
+              "../docs/STRAL-Path-Structural-Transition.png",
+              "transition correctness = resolve(structure)",
+              "path_truth_visible iff structure_mature",
+              "structure_mature = complete AND consistent",
+          ]
+
+          missing = [snippet for snippet in required_snippets if snippet not in text]
+          if missing:
+              print("ERROR: HTML demo is missing expected structural hooks:")
+              for snippet in missing:
+                  print(" -", snippet)
+              sys.exit(1)
+
+          print("HTML demo structural hooks verified.")
+          PY
+
+      - name: Verify repository documents exist
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import sys
+
+          required_paths = [
+              "README.md",
+              "LICENSE",
+              "docs/Quickstart.md",
+              "docs/FAQ.md",
+              "docs/Proof-Sketch.md",
+              "docs/STRAL-Path-Architecture-Notes.md",
+              "docs/STRAL_v1.4.pdf",
+              "docs/STRAL-Path-Structural-Transition.png",
+              "docs/Dependency-Elimination-Framework.png",
+              "docs/Shunyaya-Structural-Stack.png",
+              "VERIFY/VERIFY.txt",
+              "VERIFY/FREEZE_DEMO_SHA256.txt",
+          ]
+
+          missing = [p for p in required_paths if not Path(p).exists()]
+          if missing:
+              print("ERROR: Missing required repository files:")
+              for p in missing:
+                  print(" -", p)
+              sys.exit(1)
+
+          print("Required repository files verified.")
+          PY
