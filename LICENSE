@@ -1,0 +1,249 @@
+Open Standard License — STRAL-Path Reference Implementation
+
+STRAL-Path — Structural Transition (Path Resolution Without Traversal)
+Shunyaya Structural Transition Model
+
+Legal Status
+
+This license is a permissive Open Standard license for the STRAL-Path reference implementation.
+
+To the maximum extent permitted by applicable law, this license grants rights similar in spirit to permissive open-source licenses, while preserving truthful representation requirements for the STRAL-Path name and reference implementation.
+
+If any provision is found unenforceable, the remaining provisions remain in effect.
+
+Nature of Release
+
+This is a minimal, self-contained reference implementation.
+
+It is intended to demonstrate a structural transition correctness model—not to represent a complete graph system, routing engine, or general-purpose pathfinding framework.
+
+Behavioral guarantees apply only within the scope of the reference model and its defined structural assumptions.
+
+Permission
+
+Permission is hereby granted, free of charge, to any person or organization to:
+
+use
+execute
+study
+reproduce
+publish
+distribute
+modify
+implement
+extend
+
+the STRAL-Path reference implementation, in whole or in part, for commercial or non-commercial use, subject only to the representation and naming conditions defined in this license.
+
+No registration, fees, or approval required.
+
+No Restrictions on Use
+
+This reference implementation imposes no restrictions on usage, except:
+
+• truthful representation
+• non-misleading use of the STRAL-Path name
+
+Attribution is not required, but is encouraged for clarity and ecosystem integrity.
+No endorsement or certification is implied.
+No runtime obligations apply.
+
+Practical Interpretation
+
+This license governs usage and representation.
+
+It does not govern correctness.
+
+Correctness within this model is determined solely by structure, not by traversal, search, or sequence:
+
+structure_mature = complete AND consistent
+
+Licensing governs usage and representation — not structural correctness.
+
+transition correctness = resolve(structure)
+
+Transition correctness is a property of structure — independent of traversal, search, or exploration.
+
+Truth is represented by visible state.
+Proof is represented by certificate.
+
+Structural proof is expressed as:
+
+same structure -> same visible state -> same certificate
+
+Clarification — Evaluation as Substrate
+
+This statement refers specifically to correctness as a property of structure.
+
+The reference implementation may still perform internal evaluation.
+
+However, such evaluation is not traversal and is not the source of correctness.
+
+Correctness is determined solely by structural sufficiency.
+
+Representation & Naming
+
+Modified or extended implementations:
+
+• must not be presented as the canonical STRAL-Path reference implementation unless structural behavior is preserved
+• must not imply official authorship, certification, or endorsement
+
+Use of the name “STRAL-Path” must not imply:
+
+• endorsement
+• certification
+• governance authority
+• official status
+
+Recommended Attribution (Optional)
+
+Preferred form:
+
+Implements STRAL-Path — Structural Transition (Shunyaya Structural Model)
+
+Attribution must not imply endorsement.
+
+Scope of the Reference Implementation
+
+This release includes:
+
+• structural transition definitions
+• path validity rules
+• minimal executable reference (visual path demo)
+• outputs and reference traces
+
+STRAL-Path defines a deterministic structural model where path correctness emerges from structure:
+
+resolve(structure) ->
+
+RESOLVED   if structure_mature and exactly one valid path exists
+ABSTAIN    if structure is incomplete
+CONFLICT   if multiple valid paths exist or structure is inconsistent
+
+What This Demonstrates
+
+• path correctness without traversal
+• independence from graph search (BFS / DFS)
+• independence from ordered exploration
+• transition correctness does not require traversal
+• structural maturity governing path visibility
+• safe handling of incomplete or conflicting structure
+• deterministic and reproducible transition outcomes
+• identical structure produces identical visible state and certificate
+
+Conformance
+
+An implementation is considered compatible if it preserves:
+
+• structure-based correctness
+• independence from traversal as a requirement
+• deterministic resolution
+• structural maturity-driven visibility
+• reproducibility of visible state and certificate under equivalent inputs
+• explicit handling of incomplete and conflicting structure
+
+Conformance is judged solely by observable behavior — not by internal implementation.
+
+S1 = S2 -> VisibleState1 = VisibleState2 -> Certificate1 = Certificate2
+
+Conflict Handling
+
+In this reference implementation:
+
+• CONFLICT is explicitly defined and demonstrated
+• ABSTAIN behavior corresponds to incomplete structure (no visible path)
+• invalid or inconsistent paths do not influence the visible state
+
+Conformance requires:
+
+• no forced path under incomplete structure
+• no arbitrary selection under conflicting structure
+
+Canonical Transition Identity (Forward Path)
+
+Extended implementations may include canonical identity:
+
+canonical(resolve(S)) -> transition_identity
+
+This enables:
+
+• equivalence across different valid path structures
+• normalization of transition truth
+• identity independent of representation
+
+This is not required for the reference implementation.
+
+Relationship to Shunyaya Framework
+
+STRAL-Path is part of the broader Shunyaya framework.
+
+It builds on:
+
+• SLANG → structural resolution without execution
+• ORL → order-independent correctness
+• STINT → correctness without connectivity
+• STIC → correctness without cloud dependency
+• STRAL → transition without space-time primitives
+
+Architecture License
+
+The conceptual architecture and documentation are licensed under:
+
+Creative Commons Attribution-NonCommercial 4.0 (CC BY-NC 4.0)
+
+Permitted:
+
+• research
+• academic use
+• study and reproduction
+• non-commercial distribution
+
+Commercial use of architecture text is not permitted under this license.
+
+Full license:
+https://creativecommons.org/licenses/by-nc/4.0/
+
+Responsibility
+
+Use of STRAL-Path in real-world systems is entirely at the user’s own responsibility.
+
+This reference implementation provides:
+
+• deterministic structural transition resolution with reproducible visible state and certificate
+• path correctness from structure
+• safe handling of incomplete and conflicting structure
+
+It does not provide:
+
+• shortest path guarantees
+• routing optimization guarantees
+• real-world traversal guarantees
+• system-level execution guarantees
+• safety-critical assurances
+• regulatory or compliance guarantees
+
+No Warranty
+
+THE STRAL-PATH REFERENCE IMPLEMENTATION IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND.
+
+THIS INCLUDES, BUT IS NOT LIMITED TO:
+
+• MERCHANTABILITY
+• FITNESS FOR A PARTICULAR PURPOSE
+• NON-INFRINGEMENT
+
+IN NO EVENT SHALL THE AUTHORS OR CONTRIBUTORS BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY ARISING FROM USE OF THIS IMPLEMENTATION.
+
+Closing Statement
+
+STRAL-Path explores a simple but fundamental idea:
+
+Path correctness emerges deterministically from structure, without traversal, search, or ordered exploration.
+
+It is released to encourage:
+
+• independent validation
+• real-world testing
+• safe experimentation
+
+STRAL-Path is offered as a minimal reference implementation of that possibility.
