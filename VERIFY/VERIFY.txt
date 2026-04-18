@@ -1,0 +1,234 @@
+STRAL-Path Verification
+
+1. Open the reference demonstration:
+   Option A (recommended):
+   python -m http.server 8000
+
+   Then open in browser:
+   http://localhost:8000/demo/stral_visual_path_demo.html
+
+   Option B (direct open):
+   open demo/stral_visual_path_demo.html in a modern browser
+
+2. Observe:
+   - deterministic structural path resolution
+   - no traversal, no graph search, no ordered exploration
+   - path truth emerges from structure alone
+   - no dependency on BFS, DFS, or execution sequence
+   - evaluation does not determine correctness (only structural sufficiency does)
+
+3. Expected baseline state:
+   - Path A: VALID
+   - Path B: INCOMPLETE
+   - Selected Path: PATH_A
+   - Resolution State: RESOLVED
+   - Path Truth: SOURCE_TO_DESTINATION
+
+4. Expected structural maturity:
+   - structure_mature = complete AND consistent
+   - path_truth_visible iff structure_mature
+
+5. Expected behavior:
+   - exactly one valid path → RESOLVED
+   - no valid path → ABSTAIN
+   - multiple valid paths → CONFLICT (no arbitrary selection)
+   - identical structure → identical visible state and certificate
+
+6. Verify determinism:
+   In browser console:
+
+   await resolution()
+   await resolution()
+
+   Expected:
+   - identical visible state
+   - identical certificate
+
+   Confirm:
+   (await resolution()).certificate === (await resolution()).certificate
+   true
+
+   Note:
+   - certificate is derived from normalized visible state
+   - identical structure → identical certificate independent of execution
+
+6.1 Verify normalization invariance:
+
+   let r = await resolution();
+
+   let normalized = JSON.stringify(r.visible, Object.keys(r.visible).sort());
+
+   JSON.stringify(r.visible) !== normalized
+
+Expected:
+true
+
+Note:
+- visible state may differ in formatting or key order
+- normalization ensures canonical representation before hashing
+- certificate is derived from normalized visible state
+
+7. Test incomplete structure (ABSTAIN):
+
+   state = JSON.parse(JSON.stringify(defaultStructure));
+   state.A2_basis = "MISSING";
+   await resolution()
+
+   Expected:
+   - Resolution State: ABSTAIN
+   - Selected Path: NONE
+   - Path Truth: NO_VISIBLE_PATH
+
+   Note:
+   - system does not force a path
+   - incomplete structure produces no unsupported outcome
+
+8. Test conflicting structure (CONFLICT):
+
+   state = JSON.parse(JSON.stringify(defaultStructure));
+   state.B3_basis = "CONSISTENT";
+   await resolution()
+
+   Expected:
+   - Resolution State: CONFLICT
+   - Selected Path: NONE
+   - Path Truth: NO_VISIBLE_PATH
+
+   Note:
+   - multiple valid paths → no arbitrary selection
+
+9. Test restored valid structure (RESOLVED):
+
+   state = JSON.parse(JSON.stringify(defaultStructure));
+   state.B3_basis = "MISSING";
+   await resolution()
+
+   Expected:
+   - Resolution State: RESOLVED
+   - Selected Path: PATH_A
+
+10. Test inconsistent edge (non-blocking alternative):
+
+    state = JSON.parse(JSON.stringify(defaultStructure));
+    state.B3_basis = "INCONSISTENT";
+    await resolution()
+
+    Expected:
+    - Path B: INVALID
+    - Path A: VALID
+    - Resolution State: RESOLVED
+    - Selected Path: PATH_A
+
+    Note:
+    - invalid structure does not override valid alternative
+
+11. Verify order independence:
+
+    let s1 = { ...defaultStructure };
+    let s2 = {};
+    Object.keys(s1).reverse().forEach(k => s2[k] = s1[k]);
+
+    state = s1;
+    let r1 = await resolution();
+
+    state = s2;
+    let r2 = await resolution();
+
+    r1.certificate === r2.certificate &&
+    JSON.stringify(r1.visible) === JSON.stringify(r2.visible)
+
+    Expected:
+    true
+
+    Result:
+    - structure order does not affect outcome
+
+12. Verify edge validation logic:
+
+state = JSON.parse(JSON.stringify(defaultStructure));
+
+edgeValid("A1")
+
+Expected:
+true
+
+state.A1_gate = "CLOSED";
+edgeValid("A1")
+
+Expected:
+false
+
+Note:
+- edgeValid evaluates structural validity using current global state
+- validity depends on:
+  correct origin
+  correct target
+  gate = OPEN
+  basis = CONSISTENT
+
+13. Verify structural transitions:
+
+    state = JSON.parse(JSON.stringify(defaultStructure));
+    let r1 = await resolution();
+
+    state.A2_basis = "MISSING";
+    let r2 = await resolution();
+
+    r1.resolution_state !== r2.resolution_state
+
+    Expected:
+    true
+
+14. Verify UI integrity:
+
+    typeof copyText === "function"
+    document.getElementById("copyCertificateBtn") !== null
+    document.getElementById("copyVisibleBtn") !== null
+
+    Expected:
+    true
+
+15. Verify diagram loading:
+
+    document.querySelector(".theory-image")?.complete
+    document.querySelector(".theory-image")?.naturalWidth > 0
+
+    Expected:
+    true
+
+16. Verify file identity (demo artifacts):
+
+    certutil -hashfile demo\stral_visual_path_demo.html SHA256
+
+    Note:
+    - file hash represents file identity
+    - structural certificate represents resolved structure
+
+Structural resolution principle:
+
+   resolve(structure) →
+
+       RESOLVED   if exactly one valid path exists
+       ABSTAIN    if structure is incomplete
+       CONFLICT   if multiple valid paths exist OR structure is inconsistent
+
+Core invariant:
+
+   transition correctness = resolve(structure)
+   path_truth_visible iff structure_mature
+   structure_mature = complete AND consistent
+
+17. Confirm:
+   - identical structure → identical outcome
+   - identical structure → identical certificate
+   - no traversal required for correctness
+   - no ordering required for correctness
+   - no search required for correctness
+   - incomplete structure does not produce unsupported outcomes
+   - conflicting structure does not produce arbitrary outcomes
+
+Result:
+Deterministic structural path resolution confirmed for STRAL-Path.
+
+Path correctness emerges from structure — not from traversal, search, sequence, or execution order.  
+Traversal may occur in implementation, but it does not determine correctness — structure alone determines admissible path truth.
